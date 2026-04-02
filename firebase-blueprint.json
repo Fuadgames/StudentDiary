@@ -1,0 +1,221 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application (Student or Teacher)",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "teacher"] },
+        "name": { "type": "string" },
+        "surname": { "type": "string" },
+        "email": { "type": "string" },
+        "classCode": { "type": "string", "description": "The class code the user belongs to or manages" },
+        "points": { "type": "number", "description": "Total points (for students)" },
+        "avatarUrl": { "type": "string" },
+        "theme": { "type": "string", "enum": ["light", "dark"] },
+        "language": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "role", "name", "surname", "email", "classCode"]
+    },
+    "Class": {
+      "title": "Class",
+      "description": "A class managed by a teacher",
+      "type": "object",
+      "properties": {
+        "classCode": { "type": "string" },
+        "teacherUid": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["classCode", "teacherUid"]
+    },
+    "Grade": {
+      "title": "Grade",
+      "description": "A grade given to a student",
+      "type": "object",
+      "properties": {
+        "studentUid": { "type": "string" },
+        "classCode": { "type": "string" },
+        "teacherUid": { "type": "string" },
+        "value": { "type": "number", "description": "Grade from 1 to 5" },
+        "subject": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studentUid", "classCode", "teacherUid", "value", "createdAt"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Attendance record for a student",
+      "type": "object",
+      "properties": {
+        "studentUid": { "type": "string" },
+        "classCode": { "type": "string" },
+        "status": { "type": "string", "enum": ["present", "late", "absent"] },
+        "date": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studentUid", "classCode", "status", "date"]
+    },
+    "Assignment": {
+      "title": "Assignment",
+      "description": "Extra work assignment",
+      "type": "object",
+      "properties": {
+        "classCode": { "type": "string" },
+        "teacherUid": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "points": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["classCode", "teacherUid", "title", "points", "createdAt"]
+    },
+    "Submission": {
+      "title": "Submission",
+      "description": "Student submission for an assignment",
+      "type": "object",
+      "properties": {
+        "assignmentId": { "type": "string" },
+        "studentUid": { "type": "string" },
+        "classCode": { "type": "string" },
+        "status": { "type": "string", "enum": ["review", "completed"] },
+        "content": { "type": "string" },
+        "grade": { "type": "number" },
+        "pointsAwarded": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["assignmentId", "studentUid", "classCode", "status", "createdAt"]
+    },
+    "ShopItem": {
+      "title": "ShopItem",
+      "description": "Item in the shop",
+      "type": "object",
+      "properties": {
+        "classCode": { "type": "string" },
+        "teacherUid": { "type": "string" },
+        "title": { "type": "string" },
+        "price": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["classCode", "teacherUid", "title", "price", "createdAt"]
+    },
+    "Purchase": {
+      "title": "Purchase",
+      "description": "Shop item purchase by a student",
+      "type": "object",
+      "properties": {
+        "shopItemId": { "type": "string" },
+        "studentUid": { "type": "string" },
+        "classCode": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["shopItemId", "studentUid", "classCode", "status", "createdAt"]
+    },
+    "News": {
+      "title": "News",
+      "description": "News post",
+      "type": "object",
+      "properties": {
+        "classCode": { "type": "string" },
+        "teacherUid": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["classCode", "teacherUid", "title", "content", "createdAt"]
+    },
+    "Timetable": {
+      "title": "Timetable",
+      "description": "Timetable entry",
+      "type": "object",
+      "properties": {
+        "classCode": { "type": "string" },
+        "teacherUid": { "type": "string" },
+        "day": { "type": "string" },
+        "subject": { "type": "string" },
+        "time": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["classCode", "teacherUid", "day", "subject", "time"]
+    },
+    "AvatarRequest": {
+      "title": "AvatarRequest",
+      "description": "Request to change avatar",
+      "type": "object",
+      "properties": {
+        "studentUid": { "type": "string" },
+        "classCode": { "type": "string" },
+        "newAvatarUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studentUid", "classCode", "newAvatarUrl", "status", "createdAt"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Teacher review/feedback for a student",
+      "type": "object",
+      "properties": {
+        "studentUid": { "type": "string" },
+        "classCode": { "type": "string" },
+        "teacherUid": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studentUid", "classCode", "teacherUid", "text", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "classes/{classId}": {
+      "schema": { "$ref": "#/entities/Class" },
+      "description": "Classes"
+    },
+    "grades/{gradeId}": {
+      "schema": { "$ref": "#/entities/Grade" },
+      "description": "Grades"
+    },
+    "attendance/{attendanceId}": {
+      "schema": { "$ref": "#/entities/Attendance" },
+      "description": "Attendance records"
+    },
+    "assignments/{assignmentId}": {
+      "schema": { "$ref": "#/entities/Assignment" },
+      "description": "Assignments"
+    },
+    "submissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/Submission" },
+      "description": "Submissions"
+    },
+    "shopItems/{shopItemId}": {
+      "schema": { "$ref": "#/entities/ShopItem" },
+      "description": "Shop items"
+    },
+    "purchases/{purchaseId}": {
+      "schema": { "$ref": "#/entities/Purchase" },
+      "description": "Purchases"
+    },
+    "news/{newsId}": {
+      "schema": { "$ref": "#/entities/News" },
+      "description": "News posts"
+    },
+    "timetable/{timetableId}": {
+      "schema": { "$ref": "#/entities/Timetable" },
+      "description": "Timetable entries"
+    },
+    "avatarRequests/{requestId}": {
+      "schema": { "$ref": "#/entities/AvatarRequest" },
+      "description": "Avatar change requests"
+    },
+    "reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Teacher reviews for students"
+    }
+  }
+}

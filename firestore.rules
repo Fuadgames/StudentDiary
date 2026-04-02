@@ -1,0 +1,132 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isTeacher() {
+      return isAuthenticated() && getUserData().role == 'teacher';
+    }
+
+    function isStudent() {
+      return isAuthenticated() && getUserData().role == 'student';
+    }
+
+    function hasClassCode(classCode) {
+      return isAuthenticated() && getUserData().classCode == classCode;
+    }
+
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid;
+    }
+
+    function uidNotModified() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == resource.data.uid;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+    function isValidUser(data) {
+      return data.role in ['student', 'teacher'] &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 50 &&
+             data.surname is string && data.surname.size() > 0 && data.surname.size() < 50 &&
+             data.email is string && data.email.size() > 0 && data.email.size() < 100 &&
+             data.classCode is string && data.classCode.size() > 0 && data.classCode.size() < 20;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || (isTeacher() && hasClassCode(resource.data.classCode)) || (isStudent() && hasClassCode(resource.data.classCode)));
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && uidUnchanged();
+      allow update: if isAuthenticated() && (isOwner(userId) || (isTeacher() && hasClassCode(resource.data.classCode))) && isValidUser(request.resource.data) && uidNotModified();
+    }
+
+    match /classes/{classId} {
+      allow read: if isAuthenticated() && hasClassCode(resource.data.classCode);
+      allow create: if isTeacher() && request.resource.data.teacherUid == request.auth.uid;
+      allow update: if isTeacher() && resource.data.teacherUid == request.auth.uid;
+    }
+
+    match /grades/{gradeId} {
+      allow read: if isAuthenticated() && hasClassCode(resource.data.classCode) && (isTeacher() || resource.data.studentUid == request.auth.uid);
+      allow create: if isTeacher() && hasClassCode(request.resource.data.classCode);
+      allow update: if isTeacher() && hasClassCode(resource.data.classCode);
+    }
+
+    match /attendance/{attendanceId} {
+      allow read: if isAuthenticated() && hasClassCode(resource.data.classCode) && (isTeacher() || resource.data.studentUid == request.auth.uid);
+      allow create: if isTeacher() && hasClassCode(request.resource.data.classCode);
+      allow update: if isTeacher() && hasClassCode(resource.data.classCode);
+    }
+
+    match /assignments/{assignmentId} {
+      allow read: if isAuthenticated() && hasClassCode(resource.data.classCode);
+      allow create: if isTeacher() && hasClassCode(request.resource.data.classCode);
+      allow update: if isTeacher() && hasClassCode(resource.data.classCode);
+    }
+
+    match /submissions/{submissionId} {
+      allow read: if isAuthenticated() && hasClassCode(resource.data.classCode) && (isTeacher() || resource.data.studentUid == request.auth.uid);
+      allow create: if isStudent() && hasClassCode(request.resource.data.classCode) && request.resource.data.studentUid == request.auth.uid;
+      allow update: if isAuthenticated() && hasClassCode(resource.data.classCode) && (isTeacher() || (isStudent() && resource.data.studentUid == request.auth.uid));
+    }
+
+    match /shopItems/{shopItemId} {
+      allow read: if isAuthenticated() && hasClassCode(resource.data.classCode);
+      allow create: if isTeacher() && hasClassCode(request.resource.data.classCode);
+      allow update: if isTeacher() && hasClassCode(resource.data.classCode);
+    }
+
+    match /purchases/{purchaseId} {
+      allow read: if isAuthenticated() && hasClassCode(resource.data.classCode) && (isTeacher() || resource.data.studentUid == request.auth.uid);
+      allow create: if isStudent() && hasClassCode(request.resource.data.classCode) && request.resource.data.studentUid == request.auth.uid;
+      allow update: if isTeacher() && hasClassCode(resource.data.classCode);
+    }
+
+    match /news/{newsId} {
+      allow read: if isAuthenticated() && hasClassCode(resource.data.classCode);
+      allow create: if isTeacher() && hasClassCode(request.resource.data.classCode);
+      allow update: if isTeacher() && hasClassCode(resource.data.classCode);
+    }
+
+    match /timetable/{timetableId} {
+      allow read: if isAuthenticated() && hasClassCode(resource.data.classCode);
+      allow create: if isTeacher() && hasClassCode(request.resource.data.classCode);
+      allow update: if isTeacher() && hasClassCode(resource.data.classCode);
+    }
+
+    match /avatarRequests/{requestId} {
+      allow read: if isAuthenticated() && hasClassCode(resource.data.classCode) && (isTeacher() || resource.data.studentUid == request.auth.uid);
+      allow create: if isStudent() && hasClassCode(request.resource.data.classCode) && request.resource.data.studentUid == request.auth.uid;
+      allow update: if isTeacher() && hasClassCode(resource.data.classCode);
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if isAuthenticated() && hasClassCode(resource.data.classCode) && (isTeacher() || resource.data.studentUid == request.auth.uid);
+      allow create: if isTeacher() && hasClassCode(request.resource.data.classCode);
+      allow update: if isTeacher() && hasClassCode(resource.data.classCode);
+    }
+  }
+}
